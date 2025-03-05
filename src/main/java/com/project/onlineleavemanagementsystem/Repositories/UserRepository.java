@@ -20,4 +20,20 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @Query("SELECT u FROM User u WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%')) AND u.role = :role")
     List<User> findByEmailLikeAndRole(@Param("email") String email, @Param("role") Role role);
 
+
+    @Query("SELECT lr.leaveType, COUNT(lr) FROM LeaveRequest lr " +
+            "WHERE lr.status = 'APPROVED' AND lr.user.role = 'MANAGER' " +
+            "GROUP BY lr.leaveType")
+    List<Object[]> countApprovedLeavesByTypeForManagers();
+
+    @Query("SELECT COUNT(lr) FROM LeaveRequest lr " +
+            "WHERE lr.status = 'REJECTED' AND lr.user.role = 'MANAGER'")
+    Long countRejectedLeavesForManagers();
+
+    @Query("SELECT COUNT(lr) FROM LeaveRequest lr " +
+            "WHERE lr.status = 'PENDING' AND lr.user.role = 'MANAGER'")
+    Long countPendingLeavesForManagers();
+
+
+
 }

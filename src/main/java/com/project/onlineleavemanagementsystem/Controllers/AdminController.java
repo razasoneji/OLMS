@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -150,7 +151,31 @@ public class AdminController {
     }
 
 
+    @GetMapping("/approved-leaves/managers")
+    public ResponseEntity<Map<String, Integer>> getApprovedLeavesForManagers() {
+        return ResponseEntity.ok(adminService.getTotalApprovedLeavesForManagers());
+    }
 
+
+    @GetMapping("/rejected-leaves/managers")
+    public ResponseEntity<Long> getRejectedLeavesForManagers() {
+        return ResponseEntity.ok(adminService.getRejectedLeavesForManagers());
+    }
+
+    @GetMapping("/pending-leaves/managers")
+    public ResponseEntity<Long> getPendingLeavesForManagers() {
+        return ResponseEntity.ok(adminService.getPendingLeavesForManagers());
+    }
+
+
+    @PatchMapping("/managers/{managerId}/increase-credits")
+    public ResponseEntity<String> increaseManagerCredits(
+            @PathVariable Long managerId,
+            @RequestParam int creditUnits) {
+
+        adminService.increaseManagerCredits(managerId, creditUnits);
+        return ResponseEntity.ok("Credits increased successfully.");
+    }
 
 
 

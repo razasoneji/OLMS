@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -189,4 +191,63 @@ public class AdminService {
         return userRepository.findByEmailLikeAndRole(email, Role.MANAGER);
     }
 
+    public Map<String, Integer> getTotalApprovedLeavesForManagers() {
+        List<Object[]> results = userRepository.countApprovedLeavesByTypeForManagers();
+
+        Map<String, Integer> leaveCounts = new HashMap<>();
+        leaveCounts.put("TOTAL_APPROVED_LEAVES", 0);
+        leaveCounts.put("PAID_LEAVE", 0);
+        leaveCounts.put("SICK_LEAVE", 0);
+        leaveCounts.put("CASUAL_LEAVE", 0);
+        leaveCounts.put("UNPAID_LEAVE", 0);
+
+        for (Object[] row : results) {
+            LeaveType leaveType = (LeaveType) row[0];
+            Integer count = ((Number) row[1]).intValue();
+
+            leaveCounts.put(leaveType.name(), count);
+            leaveCounts.put("TOTAL_APPROVED_LEAVES", leaveCounts.get("TOTAL_APPROVED_LEAVES") + count);
+        }
+
+        return leaveCounts;
+    }
+
+
+
+
+    public Long getRejectedLeavesForManagers() {
+        return userRepository.countRejectedLeavesForManagers();
+    }
+
+    public Long getPendingLeavesForManagers() {
+        return userRepository.countPendingLeavesForManagers();
+    }
+
+
+    @Transactional
+    public boolean increaseManagerCredits(Long managerId, int creditUnits) {
+        if (creditUnits < 1 || creditUnits > 5) {
+            throw new IllegalArgumentException("Credits must be between 1 and 5.");
+        }
+
+        // Find the manager
+        User manager = userRepository.findByIdAndRole(managerId, Role.MANAGER)
+                .orElseThrow(() -> new EntityNotFoundException("Manager not found"));
+
+        // Get their leave balance
+        LeaveBalance leaveBalance = manager.getLeaveBalance();
+        if (leaveBalance == null) {
+            LeaveBalance newLeaveBalance = new LeaveBalance();
+            newLeaveBalance.setUser(manager);
+            manager.setLeaveBalance(newLeaveBalance);
+        }
+
+        // Increase credits, remaining leaves, and paid leaves
+        leaveBalance.setCredits(leaveBalance.getCredits() + creditUnits);
+        leaveBalance.setRemainingLeaves(leaveBalance.getRemainingLeaves() + creditUnits);
+        leaveBalance.setPaidLeaves(leaveBalance.getPaidLeaves() + creditUnits);
+
+        userRepository.save(manager);
+        return true;
+    }
 }
