@@ -1,8 +1,6 @@
 package com.project.onlineleavemanagementsystem.Controllers;
 
-import com.project.onlineleavemanagementsystem.Entities.Holiday;
-import com.project.onlineleavemanagementsystem.Entities.UpdateProfileRequest;
-import com.project.onlineleavemanagementsystem.Entities.User;
+import com.project.onlineleavemanagementsystem.Entities.*;
 import com.project.onlineleavemanagementsystem.Repositories.UserRepository;
 import com.project.onlineleavemanagementsystem.Services.HolidayService;
 import com.project.onlineleavemanagementsystem.Services.LeaveRequestService;
@@ -98,7 +96,7 @@ public class ManagerController {
 
 
 
-    // pending in terms of checking.
+
     @GetMapping("/leave-requests/summary")
     public ResponseEntity<Map<String, Long>> getLeaveRequestSummaryForEmployees(Authentication authentication) {
         // Extract the logged-in user's email from the authentication object
@@ -134,6 +132,37 @@ public class ManagerController {
 
 
 
+    @GetMapping("/leave-requests/rejected")
+    public ResponseEntity<List<LeaveRequest>> getRejectedLeaveRequestsForManager(Authentication authentication) {
+        User manager = managerService.getAuthenticatedManager(authentication);
+        List<LeaveRequest> rejectedRequests = leaveRequestService.getLeaveRequestsByManagerAndStatus(manager.getId(), LeaveStatus.REJECTED);
+        return ResponseEntity.ok(rejectedRequests);
+    }
 
+    @GetMapping("/leave-requests/pending")
+    public ResponseEntity<List<LeaveRequest>> getPendingLeaveRequestsForManager(Authentication authentication) {
+        User manager = managerService.getAuthenticatedManager(authentication);
+        List<LeaveRequest> pendingRequests = leaveRequestService.getLeaveRequestsByManagerAndStatus(manager.getId(), LeaveStatus.PENDING);
+        return ResponseEntity.ok(pendingRequests);
+    }
+
+    @GetMapping("/leave-requests/approved")
+    public ResponseEntity<List<LeaveRequest>> getApprovedLeaveRequestsForManager(Authentication authentication) {
+        User manager = managerService.getAuthenticatedManager(authentication);
+        List<LeaveRequest> approvedRequests = managerService.getApprovedLeaveRequestsForManager(manager.getId());
+        return ResponseEntity.ok(approvedRequests);
+    }
+
+    @PutMapping("/leave-requests/{requestId}/approve")
+    public ResponseEntity<String> approveLeaveRequest(@PathVariable Long requestId) {
+        managerService.approveLeaveRequest(requestId);
+        return ResponseEntity.ok("Leave request approved successfully.");
+    }
+
+    @PutMapping("/leave-requests/{requestId}/reject")
+    public ResponseEntity<String> rejectLeaveRequest(@PathVariable Long requestId) {
+        managerService.rejectLeaveRequest(requestId);
+        return ResponseEntity.ok("Leave request rejected successfully.");
+    }
 
 }

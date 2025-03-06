@@ -250,4 +250,8 @@ public class AdminService {
         userRepository.save(manager);
         return true;
     }
+
+    public long getTotalManagersCount() {
+        return userRepository.countByRole(Role.MANAGER);
+    }
 }

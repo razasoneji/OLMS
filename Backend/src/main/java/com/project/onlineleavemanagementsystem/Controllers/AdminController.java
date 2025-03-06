@@ -178,5 +178,12 @@ public class AdminController {
     }
 
 
+    @GetMapping("/managers/count")
+    public ResponseEntity<Long> getTotalManagersCount() {
+        long count = adminService.getTotalManagersCount();
+        return ResponseEntity.ok(count);
+    }
+
+
 
 }

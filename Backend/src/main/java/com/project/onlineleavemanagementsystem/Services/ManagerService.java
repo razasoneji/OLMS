@@ -1,17 +1,20 @@
 package com.project.onlineleavemanagementsystem.Services;
 
-import com.project.onlineleavemanagementsystem.Entities.LeaveBalance;
-import com.project.onlineleavemanagementsystem.Entities.Role;
-import com.project.onlineleavemanagementsystem.Entities.UpdateProfileRequest;
-import com.project.onlineleavemanagementsystem.Entities.User;
+import com.project.onlineleavemanagementsystem.Entities.*;
+import com.project.onlineleavemanagementsystem.Repositories.HolidayRepository;
+import com.project.onlineleavemanagementsystem.Repositories.LeaveBalanceRepository;
+import com.project.onlineleavemanagementsystem.Repositories.LeaveRequestRepository;
 import com.project.onlineleavemanagementsystem.Repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -23,6 +26,18 @@ public class ManagerService {
 
     @Autowired
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private final LeaveRequestService leaveRequestService;
+
+    @Autowired
+    private final LeaveBalanceRepository leaveBalanceRepository;
+
+    @Autowired
+    private final LeaveRequestRepository leaveRequestRepository;
+
+    @Autowired
+    private final HolidayRepository holidayRepository;
 
     public User getAdminByManager(String managerEmail) {
         User manager = userRepository.findByEmail(managerEmail)
@@ -123,5 +138,89 @@ public class ManagerService {
     public List<User> findEmployeesByEmailAndManager(String email, User manager) {
         return userRepository.findByEmailLikeAndManager(email, manager);
     }
+
+    public User getAuthenticatedManager(Authentication authentication) {
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Manager not found"));
+    }
+
+    public List<LeaveRequest> getApprovedLeaveRequestsForManager(Long managerId) {
+        return leaveRequestService.getLeaveRequestsByManagerAndStatus(managerId, LeaveStatus.APPROVED);
+    }
+
+    @Transactional
+    public void approveLeaveRequest(Long requestId) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Leave request not found."));
+
+        if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
+            throw new RuntimeException("Leave request is not in PENDING state.");
+        }
+
+        User employee = leaveRequest.getUser();
+        LeaveBalance leaveBalance = leaveBalanceRepository.findByUser(employee)
+                .orElseGet(() -> createNewLeaveBalance(employee)); // If no balance exists, create one
+
+        int totalLeaveDays = (int) ChronoUnit.DAYS.between(leaveRequest.getStartDate(), leaveRequest.getEndDate()) + 1;
+
+        // Count holidays in the leave period
+        long holidayCount = holidayRepository.countByDateBetween(leaveRequest.getStartDate(), leaveRequest.getEndDate());
+
+        // Actual leave days excluding holidays
+        int actualLeaveDays = totalLeaveDays - (int) holidayCount;
+
+        if (actualLeaveDays > 0) {
+            deductLeaves(leaveBalance, leaveRequest.getLeaveType(), actualLeaveDays);
+            leaveBalanceRepository.save(leaveBalance);
+        }
+
+        leaveRequest.setStatus(LeaveStatus.APPROVED);
+        leaveRequestRepository.save(leaveRequest);
+    }
+
+    @Transactional
+    public void rejectLeaveRequest(Long requestId) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Leave request not found."));
+
+        if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
+            throw new RuntimeException("Leave request is not in PENDING state.");
+        }
+
+        leaveRequest.setStatus(LeaveStatus.REJECTED);
+        leaveRequestRepository.save(leaveRequest);
+    }
+
+    private LeaveBalance createNewLeaveBalance(User employee) {
+        LeaveBalance newBalance = LeaveBalance.builder()
+                .user(employee)
+                .totalLeaves(30)
+                .remainingLeaves(30)
+                .sickLeaves(10)
+                .casualLeaves(5)
+                .unpaidLeaves(5)
+                .paidLeaves(10)
+                .credits(0)
+                .build();
+        return leaveBalanceRepository.save(newBalance);
+    }
+
+    private void deductLeaves(LeaveBalance leaveBalance, LeaveType leaveType, int actualLeaveDays) {
+        leaveBalance.setRemainingLeaves(leaveBalance.getRemainingLeaves() - actualLeaveDays);
+
+        if (leaveType == LeaveType.SICK) {
+            leaveBalance.setSickLeaves(Math.max(0, leaveBalance.getSickLeaves() - actualLeaveDays));
+        } else if (leaveType == LeaveType.CASUAL) {
+            leaveBalance.setCasualLeaves(Math.max(0, leaveBalance.getCasualLeaves() - actualLeaveDays));
+        } else if (leaveType == LeaveType.UNPAID) {
+            leaveBalance.setUnpaidLeaves(Math.max(0, leaveBalance.getUnpaidLeaves() - actualLeaveDays));
+        } else if (leaveType == LeaveType.PAID) {
+            leaveBalance.setPaidLeaves(Math.max(0, leaveBalance.getPaidLeaves() - actualLeaveDays));
+        }
+    }
+
+
+
 
 }

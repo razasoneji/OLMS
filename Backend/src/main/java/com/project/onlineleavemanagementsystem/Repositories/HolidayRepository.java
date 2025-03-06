@@ -13,4 +13,6 @@ import java.time.LocalDate;
 public interface HolidayRepository extends JpaRepository<Holiday, Long> {
     @Query("SELECT COUNT(h) FROM Holiday h WHERE h.date BETWEEN :startDate AND :endDate")
     int countHolidaysBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    long countByDateBetween(LocalDate startDate, LocalDate endDate);
 }

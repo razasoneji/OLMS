@@ -1,12 +1,14 @@
 package com.project.onlineleavemanagementsystem.Services;
 
 
+import com.project.onlineleavemanagementsystem.Entities.LeaveRequest;
 import com.project.onlineleavemanagementsystem.Entities.LeaveStatus;
 import com.project.onlineleavemanagementsystem.Repositories.LeaveRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,5 +27,9 @@ public class LeaveRequestService {
         summary.put("pending", pendingCount);
 
         return summary;
+    }
+
+    public List<LeaveRequest> getLeaveRequestsByManagerAndStatus(Long managerId, LeaveStatus status) {
+        return leaveRequestRepository.findByManagerIdAndStatus(managerId, status);
     }
 }
