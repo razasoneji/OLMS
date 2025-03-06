@@ -35,5 +35,13 @@ public interface UserRepository extends JpaRepository<User,Long> {
     Long countPendingLeavesForManagers();
 
 
+    List<User> findByManager(User manager);
+    Optional<User> findByEmailAndManager(String email, User manager);
+
+
+    // Search employees whose email contains the given input and they should be under the given manager
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%')) AND u.manager = :manager")
+    List<User> findByEmailLikeAndManager(@Param("email") String email, @Param("manager") User manager);
+
 
 }

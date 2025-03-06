@@ -27,4 +27,9 @@ public class AuthController {
         String token = authService.authenticateUser(email, password);
         return ResponseEntity.ok(token);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        return ResponseEntity.ok(null); // Returning null as a string
+    }
 }
