@@ -102,33 +102,9 @@ public class ManagerService {
         return userRepository.findByManager(manager); // Returning the whole User entity
     }
 
-    public User createEmployee(User employee, String managerEmail) {
-        // Fetch logged-in manager
-        User manager = userRepository.findByEmail(managerEmail)
-                .orElseThrow(() -> new EntityNotFoundException("Manager not found"));
 
-        // Assign the employee's manager and department
-        employee.setManager(manager);
-        employee.setDepartment(manager.getDepartment());
-        employee.setRole(Role.EMPLOYEE);
 
-        // Assign default leave balance
-        LeaveBalance leaveBalance = new LeaveBalance();
-        leaveBalance.setUser(employee);
-        employee.setLeaveBalance(leaveBalance);
 
-        // Encode password before saving
-        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
-
-        return userRepository.save(employee);
-    }
-
-    public void deleteEmployee(Long employeeId) {
-        if (!userRepository.existsById(employeeId)) {
-            throw new EntityNotFoundException("Employee not found with ID: " + employeeId);
-        }
-        userRepository.deleteById(employeeId);
-    }
 
     public User findEmployeeByEmailAndManager(String email, User manager) {
         return userRepository.findByEmailAndManager(email, manager)
@@ -219,6 +195,79 @@ public class ManagerService {
             leaveBalance.setPaidLeaves(Math.max(0, leaveBalance.getPaidLeaves() - actualLeaveDays));
         }
     }
+
+    public long getTotalEmployeesUnderManager(Long managerId) {
+        return userRepository.countByManagerId(managerId);
+    }
+
+
+    public void increaseEmployeeCredits(Long employeeId, int credits) {
+        if (credits < 1 || credits > 5) {
+            throw new IllegalArgumentException("Credits must be between 1 and 5.");
+        }
+
+        User employee = userRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+
+        LeaveBalance leaveBalance = leaveBalanceRepository.findByUserId(employeeId)
+                .orElseGet(() -> {
+                    LeaveBalance newLeaveBalance = new LeaveBalance();
+                    newLeaveBalance.setUser(employee);
+                    return leaveBalanceRepository.save(newLeaveBalance);
+                });
+
+        leaveBalance.setCredits(leaveBalance.getCredits() + credits);
+        leaveBalance.setPaidLeaves(leaveBalance.getPaidLeaves() + credits);
+        leaveBalance.setRemainingLeaves(leaveBalance.getRemainingLeaves() + credits);
+
+        leaveBalanceRepository.save(leaveBalance);
+    }
+
+    public LeaveBalance getEmployeeLeaveBalance(Long employeeId) {
+        return leaveBalanceRepository.findByUserId(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException("Leave balance not found for employee ID: " + employeeId));
+    }
+
+    public User createEmployee(CreateEmployeeRequest request, Authentication authentication) {
+        // Check if an employee with the same email already exists
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("An employee with this email already exists.");
+        }
+
+        User manager = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new EntityNotFoundException("Manager not found"));
+
+        User employee = new User();
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        employee.setEmail(request.getEmail());
+        employee.setPassword(passwordEncoder.encode(request.getPassword()));
+        employee.setRole(Role.EMPLOYEE);
+        employee.setManager(manager);
+        employee.setDepartment(manager.getDepartment());
+
+        User savedEmployee = userRepository.save(employee);
+
+        LeaveBalance leaveBalance = new LeaveBalance();
+        leaveBalance.setUser(savedEmployee);
+        leaveBalanceRepository.save(leaveBalance);
+
+        return savedEmployee;
+    }
+
+
+
+    public void deleteEmployee(Long employeeId) {
+        if (!userRepository.existsById(employeeId)) {
+            throw new EntityNotFoundException("Employee not found");
+        }
+        userRepository.deleteById(employeeId);
+    }
+
+
+
+
+
 
 
 

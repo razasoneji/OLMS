@@ -82,16 +82,18 @@ public class ManagerController {
         return ResponseEntity.ok(employee);
     }
 
-    @PostMapping("/employee")
-    public ResponseEntity<User> createEmployee(@RequestBody User employee, Authentication authentication) {
-        User createdEmployee = managerService.createEmployee(employee, authentication.getName());
+
+
+    @PostMapping("/employees")
+    public ResponseEntity<User> createEmployee(@RequestBody CreateEmployeeRequest request, Authentication authentication) {
+        User createdEmployee = managerService.createEmployee(request, authentication);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEmployee);
     }
 
-    @DeleteMapping("/employee/{employeeId}")
+    @DeleteMapping("/employees/{employeeId}")
     public ResponseEntity<String> deleteEmployee(@PathVariable Long employeeId) {
         managerService.deleteEmployee(employeeId);
-        return ResponseEntity.ok("Employee deleted successfully.");
+        return ResponseEntity.ok("Employee deleted successfully");
     }
 
 
@@ -153,16 +155,29 @@ public class ManagerController {
         return ResponseEntity.ok(approvedRequests);
     }
 
-    @PutMapping("/leave-requests/{requestId}/approve")
-    public ResponseEntity<String> approveLeaveRequest(@PathVariable Long requestId) {
-        managerService.approveLeaveRequest(requestId);
-        return ResponseEntity.ok("Leave request approved successfully.");
+
+    @GetMapping("/employees/count")
+    public ResponseEntity<Long> getTotalEmployeesUnderManager(Authentication authentication) {
+        User manager = (User) authentication.getPrincipal(); // Get logged-in manager
+        long count = managerService.getTotalEmployeesUnderManager(manager.getId());
+        return ResponseEntity.ok(count);
     }
 
-    @PutMapping("/leave-requests/{requestId}/reject")
-    public ResponseEntity<String> rejectLeaveRequest(@PathVariable Long requestId) {
-        managerService.rejectLeaveRequest(requestId);
-        return ResponseEntity.ok("Leave request rejected successfully.");
+    @PutMapping("/employees/{employeeId}/increase-credits")
+    public ResponseEntity<String> increaseEmployeeCredits(@PathVariable Long employeeId,
+                                                          @RequestParam int credits) {
+        managerService.increaseEmployeeCredits(employeeId, credits);
+        return ResponseEntity.ok("Employee credits increased successfully.");
     }
+
+
+    @GetMapping("/employees/{employeeId}/leave-balance")
+    public ResponseEntity<LeaveBalance> getEmployeeLeaveBalance(@PathVariable Long employeeId) {
+        LeaveBalance leaveBalance = managerService.getEmployeeLeaveBalance(employeeId);
+        return ResponseEntity.ok(leaveBalance);
+    }
+
+
+
 
 }
