@@ -7,11 +7,13 @@ import com.project.onlineleavemanagementsystem.Services.LeaveRequestService;
 import com.project.onlineleavemanagementsystem.Services.ManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -177,7 +179,39 @@ public class ManagerController {
         return ResponseEntity.ok(leaveBalance);
     }
 
+    @GetMapping("/leave-requests/approved/self")
+    public ResponseEntity<List<LeaveRequest>> getApprovedLeaveRequestsByManager(Authentication authentication) {
+        User manager = (User) authentication.getPrincipal();
+        List<LeaveRequest> approvedRequests = leaveRequestService.getLeaveRequestsByUserAndStatus(manager.getId(), LeaveStatus.APPROVED);
+        return ResponseEntity.ok(approvedRequests);
+    }
 
+    @GetMapping("/leave-requests/rejected/self")
+    public ResponseEntity<List<LeaveRequest>> getRejectedLeaveRequestsByManager(Authentication authentication) {
+        User manager = (User) authentication.getPrincipal();
+        List<LeaveRequest> rejectedRequests = leaveRequestService.getLeaveRequestsByUserAndStatus(manager.getId(), LeaveStatus.REJECTED);
+        return ResponseEntity.ok(rejectedRequests);
+    }
+
+    @GetMapping("/leave-requests/pending/self")
+    public ResponseEntity<List<LeaveRequest>> getPendingLeaveRequestsByManager(Authentication authentication) {
+        User manager = (User) authentication.getPrincipal();
+        List<LeaveRequest> pendingRequests = leaveRequestService.getLeaveRequestsByUserAndStatus(manager.getId(), LeaveStatus.PENDING);
+        return ResponseEntity.ok(pendingRequests);
+    }
+
+    @PostMapping("/apply-leave")
+    public ResponseEntity<String> applyLeave(
+            Authentication authentication,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam LeaveType leaveType) {
+
+        String managerEmail = authentication.getName(); // Extract email from authenticated user
+
+        leaveRequestService.applyLeave(managerEmail, startDate, endDate, leaveType);
+        return ResponseEntity.ok("Leave request submitted successfully.");
+    }
 
 
 }

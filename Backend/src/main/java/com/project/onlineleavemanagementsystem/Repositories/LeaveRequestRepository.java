@@ -1,12 +1,13 @@
 package com.project.onlineleavemanagementsystem.Repositories;
 
-import com.project.onlineleavemanagementsystem.Entities.LeaveRequest;
-import com.project.onlineleavemanagementsystem.Entities.LeaveStatus;
-import com.project.onlineleavemanagementsystem.Entities.Role;
+import com.project.onlineleavemanagementsystem.Entities.*;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +18,15 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest,Long>
     Optional<LeaveRequest> findByIdAndStatusAndUserRole(Long id, LeaveStatus status, Role role);
     long countByManagerIdAndStatus(Long managerId, LeaveStatus status);
     List<LeaveRequest> findByManagerIdAndStatus(Long managerId, LeaveStatus status);
+    List<LeaveRequest> findByUserIdAndStatus(Long userId, LeaveStatus status);
+    List<LeaveRequest> findByUserAndLeaveTypeAndStatus(User user, LeaveType leaveType, LeaveStatus status);
+    @Query("SELECT COUNT(l) > 0 FROM LeaveRequest l WHERE l.user = :user AND l.leaveType = :leaveType " +
+            "AND l.status IN :statuses AND l.startDate <= :endDate AND l.endDate >= :startDate")
+    boolean existsByUserAndLeaveTypeAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            @Param("user") User user,
+            @Param("leaveType") LeaveType leaveType,
+            @Param("statuses") List<LeaveStatus> statuses,
+            @Param("endDate") LocalDate endDate,
+            @Param("startDate") LocalDate startDate);
+
 }
