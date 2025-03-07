@@ -213,5 +213,21 @@ public class ManagerController {
         return ResponseEntity.ok("Leave request submitted successfully.");
     }
 
+    @DeleteMapping("/delete-leave/{leaveRequestId}")
+    public ResponseEntity<String> deletePendingLeaveRequest(@PathVariable Long leaveRequestId, Authentication authentication) {
+        String managerEmail = authentication.getName(); // Get logged-in user's email
+        leaveRequestService.deletePendingLeaveRequest(managerEmail, leaveRequestId);
+        return ResponseEntity.ok("Leave request deleted successfully.");
+    }
+
+    @GetMapping("/leave-balance/self")
+    public ResponseEntity<LeaveBalance> getMyLeaveBalance(Authentication authentication) {
+        User manager = (User) authentication.getPrincipal(); // Get logged-in manager
+        LeaveBalance leaveBalance = managerService.getEmployeeLeaveBalance(manager.getId());
+        return ResponseEntity.ok(leaveBalance);
+    }
+
+
+
 
 }

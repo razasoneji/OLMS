@@ -29,4 +29,19 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest,Long>
             @Param("endDate") LocalDate endDate,
             @Param("startDate") LocalDate startDate);
 
+
+    long countByUser(User user);
+
+    long countByUserAndStatus(User user, LeaveStatus status);
+
+    List<LeaveRequest> findByUserAndStatus(User user, LeaveStatus status);
+
+    Optional<LeaveRequest> findByIdAndUser(Long id, User user);
+
+    void deleteById(Long id);
+
+
+
+
+
 }

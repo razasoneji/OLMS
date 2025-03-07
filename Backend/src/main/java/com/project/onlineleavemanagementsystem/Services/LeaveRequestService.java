@@ -269,5 +269,103 @@ public class LeaveRequestService {
         }
     }
 
+    @Transactional
+    public void deletePendingLeaveRequest(String managerEmail, Long leaveRequestId) {
+        User manager = userRepository.findByEmail(managerEmail)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new RuntimeException("Leave request not found"));
+
+        // Ensure the leave request belongs to the manager and is still pending
+        if (!leaveRequest.getUser().equals(manager)) {
+            throw new IllegalArgumentException("You can only delete your own leave requests.");
+        }
+
+        if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
+            throw new IllegalStateException("Only pending leave requests can be deleted.");
+        }
+
+        leaveRequestRepository.delete(leaveRequest);
+    }
+
+    public List<LeaveRequest> getPendingLeaveRequestsByUser(String email) {
+        User employee = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        return leaveRequestRepository.findByUserAndStatus(employee, LeaveStatus.PENDING);
+    }
+
+    public LeaveRequest getLeaveRequestById(Long leaveRequestId, String email) {
+        User employee = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        return leaveRequestRepository.findByIdAndUser(leaveRequestId, employee)
+                .orElseThrow(() -> new RuntimeException("Leave request not found or unauthorized access"));
+    }
+
+    public void deletePendingLeaveRequestEmp(Long leaveRequestId, String email) {
+        User employee = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        LeaveRequest leaveRequest = leaveRequestRepository.findByIdAndUser(leaveRequestId, employee)
+                .orElseThrow(() -> new RuntimeException("Leave request not found or unauthorized access"));
+
+        if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
+            throw new RuntimeException("Cannot delete leave request. It is already " + leaveRequest.getStatus().toString().toLowerCase());
+        }
+
+        leaveRequestRepository.deleteById(leaveRequestId);
+    }
+
+
+    @Transactional
+    public void applyLeaveToManager(String employeeEmail, LocalDate startDate, LocalDate endDate, LeaveType leaveType) {
+        LocalDate tomorrow = LocalDate.now().plusDays(1); // Ensure leave starts tomorrow or later
+
+        if (startDate.isBefore(tomorrow)) {
+            throw new IllegalArgumentException("Start date must be tomorrow or a future date.");
+        }
+
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("End date must be equal to or greater than start date.");
+        }
+
+        // Fetch employee from DB
+        User employee = userRepository.findByEmail(employeeEmail)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // Fetch manager of the employee
+        User manager = employee.getManager();
+        if (manager == null) {
+            throw new IllegalStateException("Manager not assigned for this employee.");
+        }
+
+        // Check for overlapping leave requests (Pending or Approved)
+        boolean isOverlapping = leaveRequestRepository.existsByUserAndLeaveTypeAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                employee, leaveType, List.of(LeaveStatus.PENDING, LeaveStatus.APPROVED), endDate, startDate);
+
+        if (isOverlapping) {
+            throw new IllegalArgumentException("Leave request overlaps with existing pending or approved leave requests.");
+        }
+
+        // Validate leave balance
+        validateLeaveBalance(employee, leaveType, startDate, endDate);
+
+        // Create and save the leave request
+        LeaveRequest leaveRequest = LeaveRequest.builder()
+                .user(employee)
+                .manager(manager)
+                .startDate(startDate)
+                .endDate(endDate)
+                .leaveType(leaveType)
+                .status(LeaveStatus.PENDING)
+                .build();
+
+        leaveRequestRepository.save(leaveRequest);
+    }
+
+
+
 
 }
