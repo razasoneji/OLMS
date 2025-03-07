@@ -7,6 +7,7 @@ import com.project.onlineleavemanagementsystem.Repositories.LeaveBalanceReposito
 import com.project.onlineleavemanagementsystem.Repositories.LeaveRequestRepository;
 import com.project.onlineleavemanagementsystem.Repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LeaveRequestService {
@@ -24,6 +26,7 @@ public class LeaveRequestService {
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final HolidayRepository holidayRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public Map<String, Long> getLeaveRequestSummaryByManager(Long managerId) {
         long acceptedCount = leaveRequestRepository.countByManagerIdAndStatus(managerId, LeaveStatus.APPROVED);
@@ -172,6 +175,17 @@ public class LeaveRequestService {
                 .build();
 
         leaveRequestRepository.save(leaveRequest);
+
+        log.info("going to send mail request to email service from leave request service ");
+        emailService.sendLeaveRequestEmail(
+                admin.getEmail(),
+                manager.getFirstName() + " " + manager.getLastName(),
+                startDate.toString(),
+                endDate.toString(),
+                leaveType.toString()
+        );
+        log.info("Email request send successfully , check email of admin");
+
     }
 
 
@@ -363,6 +377,16 @@ public class LeaveRequestService {
                 .build();
 
         leaveRequestRepository.save(leaveRequest);
+
+        log.info("going to send mail request to email service from leave request service.");
+        emailService.sendLeaveRequestEmail(
+                manager.getEmail(),
+                employee.getFirstName() + " " + employee.getLastName(),
+                startDate.toString(),
+                endDate.toString(),
+                leaveType.toString()
+        );
+        log.info("Email request send successfully , check email of admin.");
     }
 
 
