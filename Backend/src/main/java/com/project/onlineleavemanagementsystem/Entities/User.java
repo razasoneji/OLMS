@@ -50,7 +50,6 @@ public class User implements UserDetails {
     private User manager; // The admin is the manager of managers, and managers are the managers of employees
 
     @ManyToOne
-    @JsonIgnore
     @JoinColumn(name = "department_id")
     private Department department;
 
