@@ -8,6 +8,7 @@ import com.project.onlineleavemanagementsystem.Repositories.LeaveRequestReposito
 import com.project.onlineleavemanagementsystem.Repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,35 @@ public class LeaveRequestService {
     private final HolidayRepository holidayRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+
+
+
+
+    /**
+     * Runs every day at midnight (12:00 AM) to update outdated leave requests.
+     */
+    @Scheduled(cron = "0 0 0 * * ?") // Runs at midnight daily
+    @Transactional
+    public void rejectOutdatedLeaveRequests() {
+        LocalDate today = LocalDate.now();
+
+        // Fetch all pending leave requests where startDate is today or in the past
+        List<LeaveRequest> outdatedRequests = leaveRequestRepository.findByStatusAndStartDateBefore(
+                LeaveStatus.PENDING, today.plusDays(1)
+        );
+
+        // Update status to REJECTED
+        for (LeaveRequest request : outdatedRequests) {
+            request.setStatus(LeaveStatus.REJECTED);
+        }
+
+        // Save all updates in the database
+        leaveRequestRepository.saveAll(outdatedRequests);
+
+        System.out.println("Rejected outdated leave requests: " + outdatedRequests.size());
+    }
+
+
 
     public Map<String, Long> getLeaveRequestSummaryByManager(Long managerId) {
         long acceptedCount = leaveRequestRepository.countByManagerIdAndStatus(managerId, LeaveStatus.APPROVED);

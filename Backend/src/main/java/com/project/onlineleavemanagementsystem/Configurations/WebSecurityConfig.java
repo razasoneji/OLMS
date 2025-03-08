@@ -61,7 +61,7 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true); // Allow credentials (for authentication headers & cookies)
         configuration.setAllowedOriginPatterns(List.of("http://localhost:*")); // Allows any port on localhost
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Specify required headers
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
