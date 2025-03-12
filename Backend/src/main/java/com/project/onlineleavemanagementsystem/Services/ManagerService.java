@@ -8,6 +8,8 @@ import com.project.onlineleavemanagementsystem.Repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +41,8 @@ public class ManagerService {
 
     @Autowired
     private final HolidayRepository holidayRepository;
+
+    private final JavaMailSender mailSender;
 
     public User getAdminByManager(String managerEmail) {
         User manager = userRepository.findByEmail(managerEmail)
@@ -227,7 +232,35 @@ public class ManagerService {
         return leaveBalanceRepository.findByUserId(employeeId)
                 .orElseThrow(() -> new EntityNotFoundException("Leave balance not found for employee ID: " + employeeId));
     }
+    //working one
+//    public User createEmployee(CreateEmployeeRequest request, Authentication authentication) {
+//        // Check if an employee with the same email already exists
+//        if (userRepository.existsByEmail(request.getEmail())) {
+//            throw new IllegalArgumentException("An employee with this email already exists.");
+//        }
+//
+//        User manager = userRepository.findByEmail(authentication.getName())
+//                .orElseThrow(() -> new EntityNotFoundException("Manager not found"));
+//
+//        User employee = new User();
+//        employee.setFirstName(request.getFirstName());
+//        employee.setLastName(request.getLastName());
+//        employee.setEmail(request.getEmail());
+//        employee.setPassword(passwordEncoder.encode(request.getPassword()));
+//        employee.setRole(Role.EMPLOYEE);
+//        employee.setManager(manager);
+//        employee.setDepartment(manager.getDepartment());
+//
+//        User savedEmployee = userRepository.save(employee);
+//
+//        LeaveBalance leaveBalance = new LeaveBalance();
+//        leaveBalance.setUser(savedEmployee);
+//        leaveBalanceRepository.save(leaveBalance);
+//
+//        return savedEmployee;
+//    }
 
+    @Transactional
     public User createEmployee(CreateEmployeeRequest request, Authentication authentication) {
         // Check if an employee with the same email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -237,24 +270,53 @@ public class ManagerService {
         User manager = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException("Manager not found"));
 
+        // Generate a random temporary password
+        String tempPassword = generateTemporaryPassword();
+
+        // Create new employee and set attributes
         User employee = new User();
         employee.setFirstName(request.getFirstName());
         employee.setLastName(request.getLastName());
         employee.setEmail(request.getEmail());
-        employee.setPassword(passwordEncoder.encode(request.getPassword()));
+        employee.setPassword(passwordEncoder.encode(tempPassword)); // Store hashed password
         employee.setRole(Role.EMPLOYEE);
         employee.setManager(manager);
         employee.setDepartment(manager.getDepartment());
 
+        // Save the employee
         User savedEmployee = userRepository.save(employee);
 
+        // Assign leave balance to the new employee
         LeaveBalance leaveBalance = new LeaveBalance();
         leaveBalance.setUser(savedEmployee);
         leaveBalanceRepository.save(leaveBalance);
 
+        // Send email to employee with their credentials
+        sendEmployeeCredentialsEmail(savedEmployee.getEmail(), tempPassword);
+
         return savedEmployee;
     }
 
+    private void sendEmployeeCredentialsEmail(String email, String tempPassword) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Your Account Credentials - LeaveEase");
+        message.setText("Dear Employee,\n\n" +
+                "Your account has been successfully created on the Online Leave Management System.\n\n" +
+                "Here are your login credentials:\n" +
+                "Email: " + email + "\n" +
+                "Temporary Password: " + tempPassword + "\n\n" +
+                "Please log in and change your password immediately.\n\n" +
+                "Try to set some Strong password which is non-obvious.\n\n" +
+                "Best Regards,\n" +
+                "LeaveEase Team");
+
+        mailSender.send(message);
+    }
+
+    private String generateTemporaryPassword() {
+        return UUID.randomUUID().toString().substring(0, 8); // Generate an 8-character random password
+    }
 
 
     public void deleteEmployee(Long employeeId) {

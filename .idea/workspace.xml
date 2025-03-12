@@ -5,39 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="62773c4b-bead-4dae-b1f0-8afafe99a936" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Advices/GlobalExceptionHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Configurations/WebSecurityConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Controllers/AdminController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Controllers/AuthController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/Department.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/Holiday.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/HolidayType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/LeaveBalance.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/LeaveRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/LeaveStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/LeaveType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/Role.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Entities/User.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Filters/JwtAuthFilter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/OnlineLeaveManagementSystemApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Repositories/DepartmentRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Repositories/HolidayRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Repositories/LeaveBalanceRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Repositories/LeaveRequestRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Repositories/UserRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Services/AdminService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Services/AuthService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Services/HolidayService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Services/JwtService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/project/onlineleavemanagementsystem/Services/UserDetailsServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/project/onlineleavemanagementsystem/OnlineLeaveManagementSystemApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,11 +46,13 @@
     "RequestMappingsPanelWidth0": "75",
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.OnlineLeaveManagementSystemApplication.executor": "Run",
+    "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/RAZA SONEJI/OneDrive/Desktop/Leave Management/OnlineLeaveManagementSystem/Backend",
+    "last_opened_file_path": "C:/Users/SHIVANSH/Desktop/OLMS/Backend",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -120,6 +90,8 @@
       <updated>1741113105716</updated>
       <workItem from="1741113106785" duration="3576000" />
       <workItem from="1741174658452" duration="19027000" />
+      <workItem from="1741281382574" duration="17000" />
+      <workItem from="1741281524272" duration="10000" />
     </task>
     <servers />
   </component>

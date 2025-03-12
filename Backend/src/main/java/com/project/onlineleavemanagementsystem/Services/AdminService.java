@@ -10,8 +10,11 @@ import com.project.onlineleavemanagementsystem.Repositories.LeaveBalanceReposito
 import com.project.onlineleavemanagementsystem.Repositories.LeaveRequestRepository;
 import com.project.onlineleavemanagementsystem.Repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,9 +26,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AdminService {
 
     @Autowired
@@ -49,6 +54,8 @@ public class AdminService {
 
     @Autowired
     private LeaveBalanceRepository leaveBalanceRepository;
+
+    private final JavaMailSender mailSender;
 
 
 
@@ -85,7 +92,31 @@ public class AdminService {
 //
 //        return userRepository.save(manager);
 //    }
+//    Actual working one is the below one
+//     1
+//    public User createManager(User manager) {
+//        // Fetch the admin (assuming there is only one admin with ID 1)
+//        User admin = userRepository.findByIdAndRole(1L, Role.ADMIN)
+//                .orElseThrow(() -> new EntityNotFoundException("Admin not found"));
+//
+//        // Set the role as MANAGER and assign admin as manager's manager
+//        manager.setRole(Role.MANAGER);
+//        manager.setManager(admin);
+//
+//        // Create and assign leave balance to the new manager
+//        LeaveBalance leaveBalance = new LeaveBalance();
+//        leaveBalance.setUser(manager); // Set the newly created manager as the user
+//        manager.setLeaveBalance(leaveBalance);
+//
+//        // Hash the password before saving
+//        manager.setPassword(passwordEncoder.encode(manager.getPassword()));
+//
+//        // Save manager first (cascading may handle leave balance if mapped)
+//        return userRepository.save(manager);
+//    }
 
+
+    @Transactional
     public User createManager(User manager) {
         // Fetch the admin (assuming there is only one admin with ID 1)
         User admin = userRepository.findByIdAndRole(1L, Role.ADMIN)
@@ -95,16 +126,45 @@ public class AdminService {
         manager.setRole(Role.MANAGER);
         manager.setManager(admin);
 
-        // Create and assign leave balance to the new manager
-        LeaveBalance leaveBalance = new LeaveBalance();
-        leaveBalance.setUser(manager); // Set the newly created manager as the user
-        manager.setLeaveBalance(leaveBalance);
+        // Generate a temporary password
+        String tempPassword = generateTemporaryPassword();
 
         // Hash the password before saving
-        manager.setPassword(passwordEncoder.encode(manager.getPassword()));
+        manager.setPassword(passwordEncoder.encode(tempPassword));
 
-        // Save manager first (cascading may handle leave balance if mapped)
-        return userRepository.save(manager);
+        // Create and assign leave balance to the new manager
+        LeaveBalance leaveBalance = new LeaveBalance();
+        leaveBalance.setUser(manager);
+        manager.setLeaveBalance(leaveBalance);
+
+        // Save the manager in the database
+        User savedManager = userRepository.save(manager);
+
+        // Send email with credentials
+        sendManagerCredentialsEmail(savedManager.getEmail(), tempPassword);
+
+        return savedManager;
+    }
+
+    private void sendManagerCredentialsEmail(String email, String tempPassword) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Your Account Credentials - LeaveEase - OLMS (Online Leave Management System)");
+        message.setText("Dear Manager,\n\n" +
+                "Your account has been successfully created on the Online Leave Management System.\n\n" +
+                "Here are your login credentials:\n\n" +
+                "Email: " + email + "\n" +
+                "Temporary Password: " + tempPassword + "\n\n" +
+                "Please log in and change your password immediately.\n\n" +
+                "We Recommend you to keep a strong password that is non-obvious\n\n"+
+                "Best Regards,\n" +
+                "LeaveEase Team");
+
+        mailSender.send(message);
+    }
+
+    private String generateTemporaryPassword() {
+        return UUID.randomUUID().toString().substring(0, 8); // Generate 8-character password
     }
 
 

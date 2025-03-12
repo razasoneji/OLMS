@@ -6,12 +6,15 @@
 package com.project.onlineleavemanagementsystem.Controllers;
 
 import com.project.onlineleavemanagementsystem.Entities.*;
+import com.project.onlineleavemanagementsystem.Repositories.UserRepository;
 import com.project.onlineleavemanagementsystem.Services.AdminService;
 import com.project.onlineleavemanagementsystem.Services.HolidayService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +30,9 @@ public class AdminController {
 
     @Autowired
     private HolidayService holidayService;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     @GetMapping("/{id}")
@@ -183,6 +189,9 @@ public class AdminController {
         long count = adminService.getTotalManagersCount();
         return ResponseEntity.ok(count);
     }
+
+
+
 
 
 

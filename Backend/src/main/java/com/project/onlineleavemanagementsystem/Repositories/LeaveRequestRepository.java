@@ -39,6 +39,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest,Long>
     Optional<LeaveRequest> findByIdAndUser(Long id, User user);
 
     void deleteById(Long id);
+    List<LeaveRequest> findByStatusAndStartDateBefore(LeaveStatus status, LocalDate date);
 
 
 
