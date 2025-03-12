@@ -30,16 +30,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        log.info("The request is "+ request.getRequestURI()+"  "+ request.getQueryString()+" "+request.getHeader("Authorization") );
         log.info("Inside doFilterInternal");
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
         log.info("Inside do filter 2");
+        log.info("Auth header is " + authHeader);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             username = jwtService.extractUsername(token);
             log.info("Inside do filter 3");
+            log.info("the extracted username/email is : " + username);
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

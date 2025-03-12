@@ -5,6 +5,7 @@ import com.project.onlineleavemanagementsystem.Filters.JwtAuthFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,6 +36,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() // Public authentication endpoints
                         .requestMatchers("/api/employee/**").hasRole("EMPLOYEE") // Only EMPLOYEE can access
                         .requestMatchers("/api/manager/**").hasRole("MANAGER") // Only MANAGER can access
+                        .requestMatchers(HttpMethod.PATCH, "/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Only ADMIN can access
                         .anyRequest().authenticated() // Secure all other endpoints
                 )
@@ -61,9 +64,9 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true); // Allow credentials (for authentication headers & cookies)
         configuration.setAllowedOriginPatterns(List.of("http://localhost:*")); // Allows any port on localhost
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Specify required headers
-
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH","DELETE", "OPTIONS"));
+//        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Specify required headers
+        configuration.setAllowedHeaders(List.of("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // Apply CORS settings globally
         return source;

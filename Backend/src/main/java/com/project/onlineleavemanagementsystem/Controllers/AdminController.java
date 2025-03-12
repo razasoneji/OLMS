@@ -88,7 +88,7 @@ public class AdminController {
 //    }
 
     // working approve reject endpoint.
-    @PatchMapping("/leave-requests/{leaveRequestId}/status")
+    @PutMapping("/leave-requests/{leaveRequestId}/status")
     public ResponseEntity<String> updateLeaveRequestStatus(
             @PathVariable Long leaveRequestId,
             @RequestParam LeaveStatus status) {

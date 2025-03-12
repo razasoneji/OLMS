@@ -162,7 +162,7 @@ public class ManagerController {
     public ResponseEntity<Long> getTotalEmployeesUnderManager(Authentication authentication) {
         User manager = (User) authentication.getPrincipal(); // Get logged-in manager
         long count = managerService.getTotalEmployeesUnderManager(manager.getId());
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(count);    
     }
 
     @PutMapping("/employees/{employeeId}/increase-credits")
