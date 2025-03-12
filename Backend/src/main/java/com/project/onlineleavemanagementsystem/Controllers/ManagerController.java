@@ -5,6 +5,7 @@ import com.project.onlineleavemanagementsystem.Repositories.UserRepository;
 import com.project.onlineleavemanagementsystem.Services.HolidayService;
 import com.project.onlineleavemanagementsystem.Services.LeaveRequestService;
 import com.project.onlineleavemanagementsystem.Services.ManagerService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -226,6 +227,12 @@ public class ManagerController {
         LeaveBalance leaveBalance = managerService.getEmployeeLeaveBalance(manager.getId());
         return ResponseEntity.ok(leaveBalance);
     }
+
+
+
+
+
+
 
 
 

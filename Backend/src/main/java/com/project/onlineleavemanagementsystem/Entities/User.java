@@ -60,6 +60,7 @@ public class User implements UserDetails {
     @JsonIgnore
     private Set<LeaveRequest> leaveRequests = new HashSet<>();
 
+
     //  Corrected: Returning role with "ROLE_" prefix
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
